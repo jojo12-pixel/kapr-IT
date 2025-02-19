@@ -1,0 +1,295 @@
+
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Generated Code</title>
+        <style>/* General Styles */
+:root {
+    --bg-color: #f9f9f9;
+    --text-color: #333;
+    --panel-bg: #fff8dc;
+    --border-color: #ffcc00;
+    --button-bg: #ff6600;
+    --button-hover-bg: #e65c00;
+}
+
+body.dark-mode {
+    --bg-color: #121212;
+    --text-color: #ffffff;
+    --panel-bg: #1e1e1e;
+    --border-color: #333;
+    --button-bg: #bb86fc;
+    --button-hover-bg: #9c27b0;
+}
+
+body {
+    margin: 0;
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.comic-container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background: var(--panel-bg);
+    border: 5px solid var(--border-color);
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.comic-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.comic-header h1 {
+    font-size: 2rem;
+    color: var(--button-bg);
+}
+
+.comic-header p {
+    font-size: 1rem;
+    color: var(--text-color);
+}
+
+.comic-main {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.comic-panel {
+    background: var(--panel-bg);
+    padding: 15px;
+    border: 2px dashed var(--border-color);
+    border-radius: 10px;
+    text-align: center;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.comic-label {
+    font-size: 1.2rem;
+    color: var(--button-bg);
+}
+
+.comic-input {
+    margin-top: 10px;
+    padding: 10px;
+    border: 2px solid var(--border-color);
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.comic-button {
+    padding: 10px 20px;
+    background-color: var(--button-bg);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.comic-button:hover {
+    background-color: var(--button-hover-bg);
+}
+
+.comic-textarea {
+    width: 100%;
+    height: 100px;
+    padding: 10px;
+    border: 2px solid var(--border-color);
+    border-radius: 5px;
+    font-size: 1rem;
+    resize: none;
+}
+
+.drop-area {
+    margin-top: 10px;
+    padding: 20px;
+    background: var(--panel-bg);
+    border: 2px dashed var(--border-color);
+    border-radius: 10px;
+    text-align: center;
+    font-size: 1rem;
+    color: var(--text-color);
+    transition: border-color 0.3s, background-color 0.3s;
+}
+
+.drop-area.dragover {
+    border-color: var(--button-bg);
+    background: rgba(187, 134, 252, 0.2); /* Light purple for drag-over effect */
+}
+
+.comic-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}</style>
+      </head>
+      <body>
+        <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image to Text Prompt - Comic Style</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="comic-container">
+        <header class="comic-header">
+            <h1>Comic Style Image to Text Prompt</h1>
+            <p>Convert your image into a creative text prompt using Gemini 2.0!</p>
+            <!-- Toggle Button -->
+            <button id="themeToggle" class="comic-button">🌙 Dark Mode</button>
+        </header>
+
+        <main class="comic-main">
+            <div class="comic-panel">
+                <label for="imageInput" class="comic-label">Upload Your Image:</label>
+                <input type="file" id="imageInput" accept="image/*" class="comic-input">
+
+                <!-- Drop Area -->
+                <div id="dropArea" class="drop-area">
+                    <p>Drop your image here</p>
+                </div>
+            </div>
+
+            <div class="comic-panel">
+                <button id="generatePromptBtn" class="comic-button">Generate Prompt</button>
+            </div>
+
+            <div class="comic-panel">
+                <h2>Your Generated Prompt:</h2>
+                <textarea id="promptOutput" class="comic-textarea" readonly></textarea>
+            </div>
+        </main>
+
+        <footer class="comic-footer">
+            <p>Powered by Gemini 2.0 Flash Thinking</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+        <script>// Theme Toggle Logic
+const themeToggle = document.getElementById('themeToggle');
+const body = document.body;
+
+themeToggle.addEventListener('click', () => {
+    body.classList.toggle('dark-mode');
+
+    // Update button text based on current mode
+    if (body.classList.contains('dark-mode')) {
+        themeToggle.textContent = '☀️ Light Mode';
+    } else {
+        themeToggle.textContent = '🌙 Dark Mode';
+    }
+});
+
+// Drag and Drop Logic
+const dropArea = document.getElementById('dropArea');
+const imageInput = document.getElementById('imageInput');
+
+// Prevent default behavior for drag events
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, preventDefaults, false);
+});
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+// Highlight drop area when dragging over it
+['dragenter', 'dragover'].forEach(eventName => {
+    dropArea.addEventListener(eventName, () => dropArea.classList.add('dragover'), false);
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, () => dropArea.classList.remove('dragover'), false);
+});
+
+// Handle dropped files
+dropArea.addEventListener('drop', (e) => {
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        imageInput.files = files; // Assign dropped file to the input element
+        alert('Image dropped successfully!');
+    }
+});
+
+// Generate Prompt Logic
+document.getElementById('generatePromptBtn').addEventListener('click', async () => {
+    const imageInput = document.getElementById('imageInput');
+    const promptOutput = document.getElementById('promptOutput');
+
+    if (!imageInput.files.length) {
+        alert('Please upload an image first!');
+        return;
+    }
+
+    const file = imageInput.files[0];
+    const formData = new FormData();
+    formData.append('image', file);
+
+    // Convert image to base64
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+        const base64Image = event.target.result.split(',')[1];
+
+        // Call Gemini 2.0 API
+        const apiKey = 'AIzaSyAQyYE-Q8IyMG1caGiIUIILMI0DO-xTa10';
+        const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey;
+
+        const requestBody = {
+            contents: [
+                {
+                    parts: [
+                        {
+                            inline_data: {
+                                mime_type: 'image/jpeg',
+                                data: base64Image,
+                            },
+                        },
+                        {
+                            text: 'Describe this image in detail and generate a creative text prompt.',
+                        },
+                    ],
+                },
+            ],
+        };
+
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody),
+            });
+
+            const data = await response.json();
+            const generatedPrompt = data.candidates[0].content.parts[0].text;
+            promptOutput.value = generatedPrompt;
+        } catch (error) {
+            console.error('Error generating prompt:', error);
+            alert('An error occurred while generating the prompt.');
+        }
+    };
+
+    reader.readAsDataURL(file);
+});</script>
+      </body>
+      </html>
+    
