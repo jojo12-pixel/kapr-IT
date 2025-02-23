@@ -1,0 +1,546 @@
+<html>
+<head>
+  <title>Neon Retro Tic Tac Toe: AI Challenge</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      background-color: #120029;
+      color: #fff;
+      font-family: 'Orbitron', sans-serif;
+    }
+    #gameContainer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 95vh;
+      perspective: 1000px;
+      flex-direction: column;
+      position: relative;
+    }
+    #board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-gap: 10px;
+      transform-style: preserve-3d;
+      transform: rotateX(20deg);
+      transition: transform 0.5s ease;
+    }
+    .cell {
+      width: 100px;
+      height: 100px;
+      background: rgba(30, 30, 50, 0.5);
+      border: 2px solid #6e1eaf;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      transform-style: preserve-3d;
+      box-shadow: 0 0 15px rgba(110, 30, 175, 0.5);
+    }
+    .cell:hover {
+      box-shadow: 0 0 25px rgba(110, 30, 175, 0.8);
+    }
+    .cell.X::after {
+      content: 'X';
+      font-size: 80px;
+      color: #00ffff;
+      text-shadow: 0 0 20px #00ffff, 0 0 30px #00ffff;
+    }
+    .cell.O::after {
+      content: 'O';
+      font-size: 80px;
+      color: #ff00ff;
+      text-shadow: 0 0 20px #ff00ff, 0 0 30px #ff00ff;
+    }
+    #status {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 24px;
+      text-align: center;
+      text-shadow: 0 0 10px #fff, 0 0 20px #fff;
+    }
+    #controls {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    button {
+      background: #6e1eaf;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      font-family: 'Orbitron', sans-serif;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 10px rgba(110, 30, 175, 0.5);
+    }
+    button:hover {
+      background: #8c2ed0;
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(110, 30, 175, 0.8);
+    }
+    .grid-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: linear-gradient(0deg, transparent 24%, rgba(110, 30, 175, .05) 25%, rgba(110, 30, 175, .05) 26%, transparent 27%, transparent 74%, rgba(110, 30, 175, .05) 75%, rgba(110, 30, 175, .05) 76%, transparent 77%, transparent),
+                        linear-gradient(90deg, transparent 24%, rgba(110, 30, 175, .05) 25%, rgba(110, 30, 175, .05) 26%, transparent 27%, transparent 74%, rgba(110, 30, 175, .05) 75%, rgba(110, 30, 175, .05) 76%, transparent 77%, transparent);
+      background-size: 50px 50px;
+      pointer-events: none;
+    }
+    #menu {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(30, 30, 50, 0.9);
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      z-index: 1000;
+    }
+    #menu h2 {
+      color: #00ffff;
+      text-shadow: 0 0 10px #00ffff;
+    }
+    #menu button {
+      display: block;
+      width: 200px;
+      margin: 10px auto;
+    }
+    select {
+      background: #6e1eaf;
+      color: white;
+      border: none;
+      padding: 10px;
+      margin: 5px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 16px;
+    }
+    #scoreboard {
+      display: flex;
+      justify-content: space-around;
+      width: 100%;
+      position: absolute;
+      top: 110px;
+    }
+    .score {
+      background: rgba(30, 30, 50, 0.8);
+      border: 2px solid #6e1eaf;
+      padding: 10px 20px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 18px;
+      text-shadow: 0 0 10px #fff, 0 0 20px #fff;
+    }
+    .score span {
+      display: block;
+      font-size: 24px;
+      color: #00ffff;
+      text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+    }
+    .watermark {
+      position: absolute;
+      bottom: 5px;
+      right: 10px;
+      font-size: 12px;
+      opacity: 0.5;
+      color: #fff;
+      font-family: 'Brush Script MT', cursive;
+      text-shadow: 0 0 5px #fff, 0 0 10px #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-overlay"></div>
+  <div id="gameContainer">
+    <div id="scoreboard">
+      <div class="score">Player (X): <span id="playerScore">0</span></div>
+      <div class="score">Draws: <span id="drawScore">0</span></div>
+      <div class="score">AI (O): <span id="aiScore">0</span></div>
+    </div>
+    <div id="board"></div>
+  </div>
+  <div id="status">Welcome to Neon Tic Tac Toe!</div>
+  <div id="controls">
+    <button id="newGameBtn">New Game</button>
+    <button id="rotateBtn">Rotate Board</button>
+    <button id="settingsBtn">Settings</button>
+  </div>
+  <div id="menu" style="display: none;">
+    <h2>Game Settings</h2>
+    <select id="difficulty">
+      <option value="easy">Easy</option>
+      <option value="medium" selected>Medium</option>
+      <option value="hard">Hard</option>
+      <option value="impossible">Impossible</option>
+    </select>
+    <button id="startGameBtn">Start Game</button>
+  </div>
+  <div class="watermark">by egi syaputra</div>
+
+  <audio id="xSound" src="mixkit-winning-a-coin-video-game-2069.wav" preload="auto"></audio>
+  <audio id="oSound" src="mixkit-winning-a-coin-video-game-2069.wav" preload="auto"></audio>
+  <audio id="winSound" src="mixkit-males-yes-victory-2012.wav" preload="auto"></audio>
+  <audio id="loseSound" src="mixkit-crowd-disappointment-long-boo-463.wav" preload="auto"></audio>
+  <audio id="drawSound" src="https://freesound.org/data/previews/172/172398_2394242-lq.mp3" preload="auto"></audio>
+  <audio id="selectSound" src="mixkit-interface-option-select-2573.wav" preload="auto"></audio>
+
+  <script>
+    const X_CLASS = 'X';
+    const O_CLASS = 'O';
+    const WINNING_COMBINATIONS = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6]
+    ];
+
+    const board = document.getElementById('board');
+    const statusDisplay = document.getElementById('status');
+    const newGameButton = document.getElementById('newGameBtn');
+    const rotateButton = document.getElementById('rotateBtn');
+    const settingsButton = document.getElementById('settingsBtn');
+    const menu = document.getElementById('menu');
+    const difficultySelect = document.getElementById('difficulty');
+    const startGameButton = document.getElementById('startGameBtn');
+    const playerScoreEl = document.getElementById('playerScore');
+    const drawScoreEl = document.getElementById('drawScore');
+    const aiScoreEl = document.getElementById('aiScore');
+
+    const xSound = document.getElementById('xSound');
+    const oSound = document.getElementById('oSound');
+    const winSound = document.getElementById('winSound');
+    const loseSound = document.getElementById('loseSound');
+    const drawSound = document.getElementById('drawSound');
+    const selectSound = document.getElementById('selectSound');
+
+    let circleTurn;
+    let cellElements;
+    let difficulty = 'medium';
+    let gameActive = false;
+    let aiPlayer = O_CLASS;
+    let humanPlayer = X_CLASS;
+    let playerScore = 0;
+    let drawScore = 0;
+    let aiScore = 0;
+
+    createBoard();
+    showMenu();
+
+    newGameButton.addEventListener('click', () => {
+      playSound(selectSound);
+      showMenu();
+    });
+    rotateButton.addEventListener('click', () => {
+      playSound(selectSound);
+      rotateBoard();
+    });
+    settingsButton.addEventListener('click', () => {
+      playSound(selectSound);
+      showMenu();
+    });
+    startGameButton.addEventListener('click', () => {
+      playSound(selectSound);
+      resetScores();
+      startGame();
+    });
+
+    function createBoard() {
+      for (let i = 0; i < 9; i++) {
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        cell.dataset.cell = '';
+        cell.style.transform = `translateZ(${Math.random() * 20}px)`;
+        board.appendChild(cell);
+      }
+      cellElements = document.querySelectorAll('[data-cell]');
+    }
+
+    function showMenu() {
+      menu.style.display = 'block';
+      board.style.display = 'none';
+      statusDisplay.textContent = 'Welcome to Neon Tic Tac Toe!';
+      gameActive = false;
+      stopSound(loseSound);
+    }
+
+    function startGame() {
+      menu.style.display = 'none';
+      board.style.display = 'grid';
+      difficulty = difficultySelect.value;
+      
+      gameActive = true;
+      circleTurn = false;
+      cellElements.forEach(cell => {
+        cell.classList.remove(X_CLASS);
+        cell.classList.remove(O_CLASS);
+        cell.removeEventListener('click', handleClick);
+        cell.addEventListener('click', handleClick, { once: true });
+      });
+      setBoardHoverClass();
+      statusDisplay.textContent = "Your turn (X)";
+      stopSound(loseSound);
+    }
+
+    function handleClick(e) {
+      if (!gameActive) return;
+      
+      const cell = e.target;
+      placeMark(cell, humanPlayer, xSound);
+      if (checkWin(humanPlayer)) {
+        endGame(false, humanPlayer);
+      } else if (isDraw()) {
+        endGame(true);
+      } else {
+        makeAiMove();
+      }
+    }
+
+    function placeMark(cell, currentClass, sound) {
+      cell.classList.add(currentClass);
+      playSound(sound);
+      
+      cell.animate([
+        { transform: 'scale(0.8) rotateY(0deg)', opacity: 0.5 },
+        { transform: 'scale(1) rotateY(360deg)', opacity: 1 }
+      ], {
+        duration: 600,
+        easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+      });
+    }
+
+    function setBoardHoverClass() {
+      board.classList.remove(X_CLASS);
+      board.classList.remove(O_CLASS);
+      board.classList.add(humanPlayer);
+    }
+
+    function checkWin(currentClass) {
+      return WINNING_COMBINATIONS.some(combination => {
+        return combination.every(index => {
+          return cellElements[index].classList.contains(currentClass);
+        });
+      });
+    }
+
+    function isDraw() {
+      return [...cellElements].every(cell => {
+        return cell.classList.contains(X_CLASS) || cell.classList.contains(O_CLASS);
+      });
+    }
+
+    function endGame(draw, winner) {
+      gameActive = false;
+      if (draw) {
+        statusDisplay.textContent = 'Draw!';
+        playSound(drawSound);
+        drawScore++;
+      } else {
+        statusDisplay.textContent = winner === humanPlayer ? "You Win!" : "AI Wins!";
+        if (winner === humanPlayer) {
+              playSound(winSound);
+          playerScore++;
+        } else {
+              playSound(loseSound);
+              
+        }
+          if (winner !== humanPlayer) {
+              playSound(loseSound);
+          aiScore++;
+        }
+      }
+      updateScoreboard();
+      
+      cellElements.forEach(cell => {
+        cell.removeEventListener('click', handleClick);
+      });
+      
+      setTimeout(() => {
+        startGame();
+      }, 2000);
+    }
+
+    function updateScoreboard() {
+      playerScoreEl.textContent = playerScore;
+      drawScoreEl.textContent = drawScore;
+      aiScoreEl.textContent = aiScore;
+    }
+
+    let rotationX = 20;
+    let rotationZ = 0;
+    function rotateBoard() {
+      rotationX += 20;
+      rotationZ += 90;
+      board.style.transform = `rotateX(${rotationX}deg) rotateZ(${rotationZ}deg)`;
+      
+      cellElements.forEach(cell => {
+        const randomZ = Math.random() * 40;
+        cell.style.transform = `translateZ(${randomZ}px)`;
+      });
+    }
+
+    function makeAiMove() {
+      if (!gameActive) return;
+      
+      circleTurn = true;
+      statusDisplay.textContent = "AI is thinking...";
+      
+      setTimeout(() => {
+        let move;
+        switch(difficulty) {
+          case 'easy':
+            move = makeRandomMove();
+            break;
+          case 'medium':
+            move = Math.random() < 0.5 ? makeBestMove() : makeRandomMove();
+            break;
+          case 'hard':
+            move = Math.random() < 0.8 ? makeBestMove() : makeRandomMove();
+            break;
+          case 'impossible':
+            move = makeBestMove();
+            break;
+        }
+        
+        placeMark(cellElements[move], aiPlayer, oSound);
+        if (checkWin(aiPlayer)) {
+          endGame(false, aiPlayer);
+        } else if (isDraw()) {
+          endGame(true);
+        } else {
+          circleTurn = false;
+          statusDisplay.textContent = "Your turn (X)";
+        }
+      }, 500);
+    }
+
+    function makeRandomMove() {
+      let availableMoves = [];
+      cellElements.forEach((cell, index) => {
+        if (!cell.classList.contains(X_CLASS) && !cell.classList.contains(O_CLASS)) {
+          availableMoves.push(index);
+        }
+      });
+      return availableMoves[Math.floor(Math.random() * availableMoves.length)];
+    }
+
+    function makeBestMove() {
+      let bestScore = -Infinity;
+      let move;
+      for (let i = 0; i < 9; i++) {
+        if (!cellElements[i].classList.contains(X_CLASS) && !cellElements[i].classList.contains(O_CLASS)) {
+          cellElements[i].classList.add(aiPlayer);
+          let score = minimax(cellElements, 0, false);
+          cellElements[i].classList.remove(aiPlayer);
+          if (score > bestScore) {
+            bestScore = score;
+            move = i;
+          }
+        }
+      }
+      return move;
+    }
+
+    function minimax(board, depth, isMaximizing) {
+      let result = checkGameOver();
+      if (result !== null) {
+        return result;
+      }
+
+      if (isMaximizing) {
+        let bestScore = -Infinity;
+        for (let i = 0; i < 9; i++) {
+          if (!cellElements[i].classList.contains(X_CLASS) && !cellElements[i].classList.contains(O_CLASS)) {
+            cellElements[i].classList.add(aiPlayer);
+            let score = minimax(board, depth + 1, false);
+            cellElements[i].classList.remove(aiPlayer);
+            bestScore = Math.max(score, bestScore);
+          }
+        }
+        return bestScore;
+      } else {
+        let bestScore = Infinity;
+        for (let i = 0; i < 9; i++) {
+          if (!cellElements[i].classList.contains(X_CLASS) && !cellElements[i].classList.contains(O_CLASS)) {
+            cellElements[i].classList.add(humanPlayer);
+            let score = minimax(board, depth + 1, true);
+            cellElements[i].classList.remove(humanPlayer);
+            bestScore = Math.min(score, bestScore);
+          }
+        }
+        return bestScore;
+      }
+    }
+
+    function checkGameOver() {
+      if (checkWin(aiPlayer)) {
+        return 1;
+      } else if (checkWin(humanPlayer)) {
+        return -1;
+      } else if (isDraw()) {
+        return 0;
+      }
+      return null;
+    }
+
+    function flickerNeon() {
+      const elements = document.querySelectorAll('.cell, #status, button, select');
+      elements.forEach(el => {
+        if (Math.random() < 0.01) {
+          el.style.opacity = Math.random() * 0.5 + 0.5;
+          setTimeout(() => {
+            el.style.opacity = 1;
+          }, 50);
+        }
+      });
+      requestAnimationFrame(flickerNeon);
+    }
+
+    function playSound(sound) {
+      if (sound && typeof sound.play === 'function') {
+        sound.currentTime = 0; // Rewind to the start
+        sound.play().catch(error => {
+          console.error("Playback failed:", error);
+        });
+      } else {
+        console.warn('Sound object is invalid or play function is missing.');
+      }
+    }
+
+    function stopSound(sound) {
+        if (sound && typeof sound.pause === 'function') {
+            sound.pause();
+            sound.currentTime = 0;
+        }
+    }
+
+    function resetScores() {
+        playerScore = 0;
+        drawScore = 0;
+        aiScore = 0;
+        updateScoreboard();
+    }
+
+    flickerNeon();
+  </script>
+</body>
+</html>
